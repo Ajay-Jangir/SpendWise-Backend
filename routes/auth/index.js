@@ -3,6 +3,7 @@ const { encrypt, decrypt } = require("../../utils/encryption");
 const jwt = require("jsonwebtoken");
 const User = require("../../model/User");
 const auth = require("../../middleware/adminAuth");
+const validator = require("validator");
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "AjayJangirAdmin";
@@ -10,32 +11,61 @@ const JWT_SECRET = process.env.JWT_SECRET || "AjayJangirAdmin";
 // to register admin enable this;
 
 // router.post("/register", async (req, res) => {
-//     const { name, email, password, isAdmin = true } = req.body;
+//     let { name, email, password, isAdmin = true } = req.body;
+//     email = email.toLowerCase().trim();
+//     if (!validator.isEmail(email)) {
+//         return res.status(400).json({ message: "Invalid email format" });
+//     }
 //     try {
+//         const existingUser = await User.findOne({ email });
+//         if (existingUser) {
+//             return res.status(409).json({ message: "Email already registered. Please use another." });
+//         }
 //         const hashedPassword = encrypt(password);
 //         const user = new User({ name, email, password: hashedPassword, isAdmin });
 //         await user.save();
-//         res.status(201).json({ message: "User Registered Successfully" });
+
+//         res.status(201).json({ message: "Admin Registered Successfully" });
 //     } catch (err) {
+//         console.error(err);
 //         res.status(500).json({ message: "Registration Failed" });
 //     }
 // });
 
 
 router.post("/register", async (req, res) => {
-    const { name, email, password } = req.body;
+    let { name, email, password } = req.body;
+
+    email = email.toLowerCase().trim();
+
+    if (!validator.isEmail(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+    }
+
     try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res
+                .status(409)
+                .json({ message: "Email already registered. Please use another." });
+        }
+
         const hashedPassword = encrypt(password);
-        const user = new User({ name, email, password: hashedPassword, });
+        const user = new User({ name, email, password: hashedPassword });
         await user.save();
+
         res.status(201).json({ message: "User Registered Successfully" });
     } catch (err) {
-        res.status(500).json({ message: "Registration Failed" });
+        console.error(err);
+        res.status(500).json({ message: "Registration Failed. Please try again." });
     }
 });
 
 router.post("/login", async (req, res) => {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+
+    email = email.toLowerCase().trim();
+
     try {
         const user = await User.findOne({ email });
         if (!user) {
@@ -60,7 +90,10 @@ router.post("/login", async (req, res) => {
 });
 
 router.put("/edit", auth, async (req, res) => {
-    const { name, email, password } = req.body;
+    let { name, email, password } = req.body;
+
+    email = email.toLowerCase().trim();
+
     const userId = req.userId;
 
     if (!userId) {
@@ -104,6 +137,5 @@ router.put("/edit", auth, async (req, res) => {
         res.status(500).json({ message: "Update failed" });
     }
 });
-
 
 module.exports = router;
