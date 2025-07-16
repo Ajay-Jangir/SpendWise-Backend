@@ -8,7 +8,6 @@ const auth = require('../../middleware/auth');
 const router = express.Router();
 
 router.get('/pdf', auth, async (req, res) => {
-    console.log("Requesting user ID:", req.userId);
     try {
         const { startDate, endDate } = req.query;
         const user = await User.findById(req.userId);

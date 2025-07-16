@@ -70,7 +70,13 @@ function normalizeEntries(rows) {
                 const cleanKey = key.toLowerCase().trim();
                 normalizedRow[cleanKey] = String(row[key]).trim();
             }
-            const dateStr = parseFlexibleDate(normalizedRow.date);
+            let rawDate = row.date;
+            if (rawDate instanceof Date && !isNaN(rawDate)) {
+                rawDate = moment(rawDate).format("YYYY-MM-DD");
+            } else {
+                rawDate = String(rawDate).trim();
+            }
+            const dateStr = parseFlexibleDate(rawDate);
             const date = dateStr ? new Date(dateStr) : null;
             const description = normalizedRow.desc || normalizedRow.description || 'N/A';
             const category = normalizedRow.cat || normalizedRow.category || 'Other';
@@ -227,7 +233,7 @@ function parseFlexibleDate(str) {
     const formats = [
         "YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY", "YYYY/MM/DD", "YYYY.MM.DD",
         "DD.MM.YYYY", "MMMM D, YYYY", "D MMMM YYYY", "D MMM YYYY", "MMM D YYYY",
-        "Do MMMM YYYY"
+        "Do MMMM YYYY", "DD-MM-YY", "DD/MM/YY", "DD.MM.YY"
     ];
     for (const fmt of formats) {
         const parsed = moment(str, fmt, true);
