@@ -89,24 +89,16 @@ router.post("/login", async (req, res) => {
 
 router.put("/edit", auth, async (req, res) => {
     let { name, email, currentPassword, password: newPassword } = req.body;
-
     const userId = req.userId;
-    if (!userId) {
-        return res.status(400).json({ message: "User ID is required" });
-    }
+
+    if (!userId) return res.status(400).json({ message: "User ID is required" });
 
     try {
         const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
+        if (!user) return res.status(404).json({ message: "User not found" });
 
-        // Update name (username)
-        if (name) {
-            user.name = name;
-        }
+        if (name) user.name = name;
 
-        // Update email after checking uniqueness
         if (email && email !== user.email) {
             const normalizedEmail = email.toLowerCase().trim();
             const emailExists = await User.findOne({ email: normalizedEmail });
@@ -116,7 +108,8 @@ router.put("/edit", auth, async (req, res) => {
             user.email = normalizedEmail;
         }
 
-        // Handle password change
+        let newToken = null;
+
         if (currentPassword && newPassword) {
             const oldPassword = decrypt(user.password);
             if (currentPassword !== oldPassword) {
@@ -132,10 +125,21 @@ router.put("/edit", auth, async (req, res) => {
 
             const hashedPassword = encrypt(newPassword);
             user.password = hashedPassword;
+
+            // Generate new token since password is changed
+            newToken = jwt.sign(
+                { userId: user._id, isAdmin: user.isAdmin },
+                JWT_SECRET,
+                { expiresIn: "2h" }
+            );
         }
 
         await user.save();
-        res.json({ message: "User updated successfully" });
+
+        const response = { message: "User updated successfully" };
+        if (newToken) response.token = newToken;
+
+        res.json(response);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Update failed" });
