@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth');
 const spendRoutes = require('./routes/spend');
 const importRoutes = require('./routes/import');
 const exportRoutes = require('./routes/export');
+const resetPassword = require('./routes/resetPassword');
 const users = require("./routes/users")
 
 const app = express();
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/spend', spendRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/export', exportRoutes);
+app.use('/api/resetPassword', resetPassword);
 app.use('/api/users', users);
 
 // MongoDB Connection
