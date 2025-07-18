@@ -52,9 +52,8 @@ router.post("/update", async (req, res) => {
                 .json({ message: "Token and password are required" });
         }
 
-        // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.userId); // ← use userId instead of id
+        const user = await User.findById(decoded.userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
