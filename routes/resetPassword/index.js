@@ -21,7 +21,7 @@ router.post("/", async (req, res) => {
         user.resetTokenExpiry = expiry;
         await user.save();
 
-        const resetLink = `http://localhost:5173/resetNewPassword/${token}`;
+        const resetLink = `https://spend-wise-frontend-mu.vercel.app/resetNewPassword/${token}`;
 
         await transporter.sendMail({
             from: `"SpendWise Support" <${process.env.MAIL_USER}>`,
